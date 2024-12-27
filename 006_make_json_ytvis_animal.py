@@ -16,7 +16,7 @@ classes_2019_version = ('person', 'giant_panda', 'lizard', 'parrot',
                             'cow', 'fish', 'train', 'horse', 'turtle',
                             'bear', 'motorbike', 'giraffe', 'leopard',
                             'fox', 'deer', 'owl', 'surfboard', 'airplane',
-                            'truck', 'zebra', 'tiger', 'eleph ..ant',
+                            'truck', 'zebra', 'tiger', 'elephant',
                             'snowboard', 'boat', 'shark', 'mouse', 'frog',
                             'eagle', 'earless_seal', 'tennis_racket')
 
