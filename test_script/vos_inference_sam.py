@@ -490,8 +490,8 @@ def main():
 
         iou = intersection / union
         iou_list.append(iou)
-    iou_mean = np.mean(iou_list)
-    print(f"mean iou: {iou_mean}")
+    iou_mean = np.mean(iou_list) * 100
+    print(f"mean iou: {iou_mean:.1f}")
 
 
 if __name__ == "__main__":
