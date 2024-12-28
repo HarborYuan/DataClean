@@ -1,3 +1,6 @@
+# Modified by Haobo
+# Please put it into sam2-repo://tools/vos_inference.py
+
 # Copyright (c) Meta Platforms, Inc. and affiliates.
 # All rights reserved.
 
