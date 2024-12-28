@@ -169,6 +169,7 @@ if __name__ == '__main__':
             data_list.append(this_item)
 
             vid_id += 1
+            _tmp_img_id = -1
             if vid_id >= 50:
                 # stop at 300
                 break
