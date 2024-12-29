@@ -12,6 +12,7 @@ OUT_DIR = 'data/vid/073_refDAVIS_animal'
 IMG_PREFIX = 'data/video_datas/davis17/valid/JPEGImages'
 
 SELECT = ['cat', 'dog', 'bird', 'horse', 'animal', 'bear', 'goose', 'sheep', 'koala', 'elephant', 'flamingo', 'lizard', 'varanus', 'lamb']
+START = []
 
 if __name__ == '__main__':
     json_file = mmengine.load(PATH)['videos']
@@ -96,12 +97,16 @@ if __name__ == '__main__':
             for select in SELECT:
                 if select in exp:
                     flag = True
+                    break
 
+            for start in START:
+                if exp.startswith(start):
+                    flag = True
+                    break
             if not flag:
-                print(exp)
                 continue
 
-            # print(exp)
+            print(exp)
 
             cur_vid_out_path = os.path.join(OUT_DIR, "images", "{:06d}".format(vid_id))
             assert not os.path.exists(cur_vid_out_path)

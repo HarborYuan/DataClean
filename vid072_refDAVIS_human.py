@@ -11,7 +11,8 @@ OUT_DIR = 'data/vid/072_refDAVIS_human'
 
 IMG_PREFIX = 'data/video_datas/davis17/valid/JPEGImages'
 
-SELECT = ['person', 'man', 'woman', 'girl', 'boy']
+SELECT = []
+START = ["a man", 'a women', 'a boy', 'a girl', 'a person']
 
 if __name__ == '__main__':
     json_file = mmengine.load(PATH)['videos']
@@ -96,7 +97,12 @@ if __name__ == '__main__':
             for select in SELECT:
                 if select in exp:
                     flag = True
+                    break
 
+            for start in START:
+                if exp.startswith(start):
+                    flag = True
+                    break
             if not flag:
                 continue
 
