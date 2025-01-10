@@ -2,11 +2,11 @@ import json
 import os
 from tqdm import tqdm
 
-# load config
-with open("../config/hcstvg.json", "r") as f:
-    cfg = json.load(f)
-video_path = os.path.join(cfg.hcstvg_vid_path, "video")
-ann_path = cfg.hcstvg_ann_path
+hcstvg_vid_path = 'data/video_grounding/HC-STVG/'
+hcstvg_ann_path = 'data/video_grounding/HC-STVG/'
+
+video_path = os.path.join(hcstvg_vid_path, "video_parts")
+ann_path = hcstvg_ann_path
 
 # get video to path mapping
 dirs = os.listdir(video_path)
@@ -18,11 +18,13 @@ for dir in dirs:
         vid2path[file[:-4]] = os.path.join(dir, file)
 
 # preproc annotations
-files = ["trainv2.json", "valv2.json"]
+files = ["val_v2.json"]
 for file in files:
     videos = []
     annotations = json.load(open(os.path.join(ann_path, file), "r"))
     for video, annot in tqdm(annotations.items()):
+        if video [:-4] not in vid2path.keys():
+            continue
         out = {
             "original_video_id": video[:-4],
             "frame_count": annot["img_num"],
