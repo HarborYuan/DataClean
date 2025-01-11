@@ -10,13 +10,13 @@ import copy
 
 PATH = 'data/video_grounding/HC-STVG/val_v2_proc.json'
 VIDEO_DIR = 'data/video_grounding/HC-STVG'
-OUT_DIR = 'data/vid/082_hc2_static'
+OUT_DIR = 'data/vid/083_hc2_dynamic'
 
 SELECT = ['and']
 
 
 def judge(text):
-    return not any([s in text for s in SELECT])
+    return any([s in text for s in SELECT])
 
 if __name__ == '__main__':
     if not os.path.exists(OUT_DIR):
@@ -61,7 +61,7 @@ if __name__ == '__main__':
         new_item['video_path'] = '{:06d}.{}'.format(video_idx, ext)
         data_list.append(new_item)
         video_idx += 1
-        if video_idx >= 100:
+        if video_idx >= 300:
             break
 
     print('done')
