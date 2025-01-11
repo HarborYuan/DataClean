@@ -9,10 +9,10 @@ from mmengine.visualization import Visualizer
 
 PATH = 'data/video_grounding/VidSTG/val.json'
 VIDEO_DIR = 'data/video_grounding/VidSTG'
-OUT_DIR = 'data/vid/085_vidstg_animal'
+OUT_DIR = 'data/vid/086_vidstg_auto'
 
 SELECT = 'object'
-SELECT_NAME = ['cat', 'dog', 'bird', 'horse', 'animal', 'bear', 'goose', 'sheep', 'koala', 'elephant', 'flamingo', 'lizard', 'varanus', 'lamb']
+SELECT_NAME = ['car', 'SUV', 'sedan', 'truck', 'train', 'airplane', 'bus']
 
 VIDEO_SET = []
 
