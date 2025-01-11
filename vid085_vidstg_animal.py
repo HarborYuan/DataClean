@@ -9,15 +9,18 @@ from mmengine.visualization import Visualizer
 
 PATH = 'data/video_grounding/VidSTG/val.json'
 VIDEO_DIR = 'data/video_grounding/VidSTG'
-OUT_DIR = 'data/vid/084_vidstg_person'
+OUT_DIR = 'data/vid/085_vidstg_animal'
 
-SELECT = 'person'
+SELECT = 'object'
+SELECT_NAME = ['cat', 'dog', 'bird', 'horse', 'animal', 'bear', 'goose', 'sheep', 'koala', 'elephant', 'flamingo', 'lizard', 'varanus', 'lamb']
 
 VIDEO_SET = []
 
 
 def judge(item):
-    return item['type'] == SELECT
+    flag = item['type'] == SELECT
+    flag = flag and any([" " + itm in item['caption'] for itm in SELECT_NAME])
+    return flag
 
 if __name__ == '__main__':
     if not os.path.exists(OUT_DIR):
