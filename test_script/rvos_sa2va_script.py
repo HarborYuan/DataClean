@@ -2,6 +2,7 @@ import argparse
 import glob
 import json
 import os
+import torch
 
 import numpy as np
 from PIL import Image
@@ -14,11 +15,11 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Video Reasoning Segmentation')
     parser.add_argument(
         "--video-list-folder",
-        default="data/vid/072_refDAVIS_human",
+        default="data/benchmark/061_vipseg_car",
         metavar="FILE",
         help="path to the video list folder",
     )
-    parser.add_argument('--model_path', default="OMG-Research/Sa2VA-8B")
+    parser.add_argument('--model_path', default="ByteDance/Sa2VA-8B")
     args = parser.parse_args()
     return args
 
@@ -30,10 +31,11 @@ if __name__ == "__main__":
     model_path = cfg.model_path
     model = AutoModelForCausalLM.from_pretrained(
         model_path,
-        torch_dtype="auto",
-        device_map="auto",
-        trust_remote_code=True
-    )
+        torch_dtype=torch.bfloat16,
+        low_cpu_mem_usage=True,
+        use_flash_attn=True,
+        trust_remote_code=True,
+    ).eval().cuda()
 
     tokenizer = AutoTokenizer.from_pretrained(
         model_path,
