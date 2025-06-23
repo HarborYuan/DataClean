@@ -195,7 +195,7 @@ class TaskRVOS(BaseTask):
     
 
 
-class ActionDet(BaseTask):
+class TaskActionDet(BaseTask):
     def _load_video(self, video_path: str) -> List[Image.Image]:
         import cv2
         cap = cv2.VideoCapture(video_path)
@@ -312,6 +312,129 @@ class ActionDet(BaseTask):
             results.append(instance)
         return results
 
+
+
+class TaskVDE(BaseTask):
+    def _load_video(self, video_path: str) -> List[Image.Image]:
+        import cv2
+        cap = cv2.VideoCapture(video_path)
+        img_list = []
+        while cap.isOpened():
+            ret, frame = cap.read()
+            if not ret:
+                break
+
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            img_list.append(Image.fromarray(frame).convert('RGB'))
+
+        return img_list
+
+    def _parse_data(self, task_data: str) -> List[Instance]:
+        json_path = os.path.join(task_data, 'annotation.json')
+        json_data = json.load(open(json_path, 'r'))
+
+        results = []
+        json_data_data = json_data['data']
+        for json_item in json_data_data:
+            video_path = os.path.join(self.task_data, 'video', json_item['input'])
+            annotation_path = os.path.join(self.task_data, 'depth', json_item['output'])
+            instance_id = json_item['id']
+
+            assert os.path.exists(video_path), f"Video path {video_path} does not exist."
+            assert os.path.exists(annotation_path), f"Annotation path {annotation_path} does not exist"
+
+
+            input_dict = {}
+            input_dict['video'] = self._load_video(video_path)
+
+            output_dict = {}
+            output_dict['depth_map'] = np.load(annotation_path)['disparity'] # nf, 1, h, w
+            assert len(input_dict['video']) == output_dict['depth_map'].shape[0], "Number of video frames and depth map frames do not match."
+            assert output_dict['depth_map'].ndim == 4, "Depth map should be 4-dimensional (nf, 1, h, w)."
+            assert input_dict['video'][0].size == (output_dict['depth_map'].shape[3], output_dict['depth_map'].shape[2]), "Video frame size does not match depth map size."
+            results.append(Instance(input=input_dict, output=output_dict, id=instance_id))
+        return results
+    
+
+    def _abs_relative_difference(self, output, target, valid_mask=None):
+        actual_output = output[valid_mask]
+        actual_target = target[valid_mask]
+        abs_relative_diff = np.abs(actual_output - actual_target) / actual_target
+        return abs_relative_diff.mean()
+
+    def evaluate(self, results:List[Instance]) -> Dict[str, float]:
+        abs_rel_list = []
+        dataset_max_depth = 80
+        for instance in results:
+            depth_map = instance.output['depth_map']
+            prediction_depth = instance.output['prediction_depth']
+
+            assert depth_map.shape == prediction_depth.shape, "Depth map and prediction depth shape do not match."
+            
+            # Calculate absolute relative error
+            gt_disp = depth_map[:, 0]
+            pred_disp = prediction_depth[:, 0]
+            # valid mask
+            valid_mask = np.logical_and(
+                    (gt_disp > 1e-3), 
+                    (gt_disp < dataset_max_depth)
+                )
+            pred_disp = np.clip(pred_disp, a_min=1e-3, a_max=None) 
+            pred_disp_masked = pred_disp[valid_mask].reshape((-1, 1))
+            
+
+            gt_disp_maksed = gt_disp[valid_mask].reshape((-1, 1)).astype(np.float64)
+            # calc scale and shift
+            _ones = np.ones_like(pred_disp_masked)
+            A = np.concatenate([pred_disp_masked, _ones], axis=-1)
+            X = np.linalg.lstsq(A, gt_disp_maksed, rcond=None)[0]
+            scale, shift = X # gt = scale * pred + shift
+            
+            # align
+            aligned_pred = scale * pred_disp + shift
+            aligned_pred = np.clip(aligned_pred, a_min=1e-3, a_max=None) 
+
+
+            pred_depth = aligned_pred
+            gt_depth = gt_disp
+
+            # metric evaluation, clip to dataset min max
+            pred_depth = np.clip(
+                pred_depth, a_min=1e-3, a_max=dataset_max_depth
+            )
+            abs_rel = self._abs_relative_difference(
+                pred_depth,
+                gt_depth,
+                valid_mask=valid_mask
+            )
+            abs_rel_list.append(abs_rel)
+
+        abs_rel_mean = np.mean(abs_rel_list).item()
+
+
+        def sigmoid(x):
+            return 1 / (1 + np.exp(-x))
+        score = (sigmoid(0.1 / (abs_rel_mean + 1e-6)) * 2 - 1) * 100
+        return {"absRel": abs_rel_mean, "score": score}
+
+
+    def run_inference(self) -> List[Instance]:
+        results = []
+        for instance in tqdm.tqdm(self.data, desc=f"Running inference on {self.task_name}"):
+            input_data = instance.input
+
+            result = self.model.predict_depth(
+                video=input_data['video'],
+                text=PROMPT['VDE'],
+            )
+
+            # output postprocessing
+            depth_map = result['prediction_depth']
+            instance.output['prediction_depth'] = depth_map
+            results.append(instance)
+        return results
+
+
 tasks = {
     'AnimalVOS': TaskVOS,
     'AutoVOS':TaskVOS,
@@ -348,12 +471,18 @@ tasks = {
 
     ## Action Det
     # V-C-10 HCSTVG2
-    'StaticActionDet': ActionDet,
-    'DynamicActionDet': ActionDet,
+    'StaticActionDet': TaskActionDet,
+    'DynamicActionDet': TaskActionDet,
     # V-C-12 VidSTG
-    'AnimalVG': ActionDet,
-    'AutoVG': ActionDet,
-    'HumanVG': ActionDet,
+    'AnimalVG': TaskActionDet,
+    'AutoVG': TaskActionDet,
+    'HumanVG': TaskActionDet,
+
+    ## VDE
+    'StaticVDE': TaskVDE,
+    'StreetVDE': TaskVDE,
+    'SynVDE': TaskVDE,
+    'DynamicVDE': TaskVDE,
 }
 
 
@@ -368,6 +497,15 @@ def predict_dummy_boxes(video, text):
         ]
     }
 
+
+def predict_dummy_depth(video, text):
+    # Dummy function to simulate depth prediction
+    # In practice, this should call the model's prediction method
+    num_frames = len(video)
+    width, height = video[0].size
+    return {
+        'prediction_depth': np.random.rand(num_frames, 1, height, width).astype(np.float32) * 80  # Random depth values
+    }
 
 
 def main(root:str, model_path:str):
@@ -387,6 +525,7 @@ def main(root:str, model_path:str):
     model.preparing_for_generation(tokenizer=tokenizer)
     
     model.predict_boxes = predict_dummy_boxes
+    model.predict_depth = predict_dummy_depth
     
     for task_name in tasks:
         task_class = tasks[task_name]
