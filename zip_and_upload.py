@@ -37,10 +37,10 @@ def upload_to_huggingface(zip_path, repo_id, token=None):
         
         print(f"Uploading {zip_filename} to {repo_id}...")
         
-        # Upload the file
+        # Upload the file to video/comprehension folder
         api.upload_file(
             path_or_fileobj=zip_path,
-            path_in_repo=zip_filename,
+            path_in_repo=f"video/comprehension/{zip_filename}",
             repo_id=repo_id,
             repo_type="dataset",
             commit_message=f"Upload {zip_filename}"
@@ -56,9 +56,14 @@ def upload_to_huggingface(zip_path, repo_id, token=None):
 def main():
     # Configuration
     BASE_DIR = Path(__file__).parent
-    COMPREHENSION_DIR = BASE_DIR / "release" / "open" / "video" / "comprehension"
+    
+    # COMPREHENSION_DIR = BASE_DIR / "release" / "open" / "video" / "comprehension"
+    COMPREHENSION_DIR = BASE_DIR / "release" / "close" / "video" / "comprehension"
+    
     ZIP_OUTPUT_DIR = BASE_DIR / "release" / "zipped_datasets"
-    HF_REPO_ID = "General-Level/General-Bench-Openset"
+    
+    # HF_REPO_ID = "General-Level/General-Bench-Openset"
+    HF_REPO_ID = "General-Level/General-Bench-Closeset"
     
     # Create output directory for zip files
     ZIP_OUTPUT_DIR.mkdir(exist_ok=True)
