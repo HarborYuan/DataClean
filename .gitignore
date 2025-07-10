@@ -164,3 +164,7 @@ cython_debug/
 .vscode/
 data
 data/
+
+benchmark_data
+General-Bench-Openset
+release/
