@@ -99,6 +99,8 @@ METALIST = {
     }
 }
 
+CLOSE_WITH_ANSWER = 1
+
 
 import random
 open_ratio = 0.4
@@ -206,7 +208,8 @@ if __name__ == '__main__':
             new_input_path = os.path.join(closed_save_video_path, input_file)
             new_output_path = os.path.join(closed_save_depth_path, output_file)
             shutil.copy(source_input_path, new_input_path)
-            shutil.copy(source_output_path, new_output_path)
+            if CLOSE_WITH_ANSWER:
+                shutil.copy(source_output_path, new_output_path)
             data_list.append({
                 'input': input_file,
                 'output': output_file,

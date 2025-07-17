@@ -119,6 +119,7 @@ METALIST = {
     }
 }
 
+CLOSE_WITH_ANSWER = 1
 
 import random
 open_ratio = 0.4
@@ -190,6 +191,11 @@ if __name__ == '__main__':
             video_path = item['video_path']
             ori_data_path = os.path.join(folder, 'videos', video_path)
             assert os.path.exists(ori_data_path), f"Path {ori_data_path} does not exist"
+
+            if CLOSE_WITH_ANSWER:
+                pass
+            else:
+                del item['trajectory']
 
             # copy folder
             new_data_path = os.path.join(closed_save_video_path, video_path)

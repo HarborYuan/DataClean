@@ -63,7 +63,8 @@ def main():
     ZIP_OUTPUT_DIR = BASE_DIR / "release" / "zipped_datasets"
     
     # HF_REPO_ID = "General-Level/General-Bench-Openset"
-    HF_REPO_ID = "General-Level/General-Bench-Closeset"
+    # HF_REPO_ID = "General-Level/General-Bench-Closeset"
+    HF_REPO_ID = "General-Level/General-Bench-Closeset-with-Answer"
     
     # Create output directory for zip files
     ZIP_OUTPUT_DIR.mkdir(exist_ok=True)

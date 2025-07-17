@@ -398,6 +398,10 @@ METALIST = {
 }
 
 
+
+CLOSE_WITH_ANSWER = 1
+
+
 import random
 open_ratio = 0.4
 
@@ -450,7 +454,7 @@ if __name__ == '__main__':
 
             # copy folder
             new_data_path = os.path.join(open_save_video_path, "{:06d}".format(video_id))
-            shutil.copytree(ori_data_path, new_data_path)
+            shutil.copytree(ori_data_path, new_data_path, dirs_exist_ok=True)
 
 
         open_json_path = os.path.join(open_save_path, 'annotation.json')
@@ -476,9 +480,22 @@ if __name__ == '__main__':
             assert ori_data_path[len(SOURCE_FOLDER):] in item['input']['video_folder'], f"Path {ori_data_path} not in {item['input']['video_path']}"
             item['input']['video_folder'] = item['input']['video_folder'].split(f'/{folder}/')[-1]
 
+            # for close data, we remove output
+            if CLOSE_WITH_ANSWER:
+                pass
+            else:
+                if 'prompt' in item['input']:
+                    del item['output']
+                else:
+                    # if without prompt, we keep the first output
+                    item['output'] = {
+                        '0': item['output']['0'],
+                    }
+                item['output'] = {}
+
             # copy folder
             new_data_path = os.path.join(closed_save_video_path, "{:06d}".format(video_id))
-            shutil.copytree(ori_data_path, new_data_path)
+            shutil.copytree(ori_data_path, new_data_path, dirs_exist_ok=True)
         closed_json_path = os.path.join(closed_save_path, 'annotation.json')
         with open(closed_json_path, 'w') as f:
             json.dump(closed_data_json, f, indent=4)
