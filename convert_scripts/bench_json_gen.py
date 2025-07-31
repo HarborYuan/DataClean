@@ -452,6 +452,14 @@ if __name__ == '__main__':
             assert ori_data_path[len(SOURCE_FOLDER):] in item['input']['video_folder'], f"Path {ori_data_path} not in {item['input']['video_path']}"
             item['input']['video_folder'] = item['input']['video_folder'].split(f'/{folder}/')[-1]
 
+            if 'prompt' in item['input']:
+                pass
+            else:
+                # if without prompt, we keep the first output
+                item['input']['prompt_mask'] = {
+                    '0': item['output']['0'],
+                }
+
             # copy folder
             new_data_path = os.path.join(open_save_video_path, "{:06d}".format(video_id))
             shutil.copytree(ori_data_path, new_data_path, dirs_exist_ok=True)
@@ -482,15 +490,18 @@ if __name__ == '__main__':
 
             # for close data, we remove output
             if CLOSE_WITH_ANSWER:
-                pass
+                item['input']['prompt_mask'] = {
+                    '0': item['output']['0'],
+                }
             else:
                 if 'prompt' in item['input']:
                     del item['output']
                 else:
                     # if without prompt, we keep the first output
-                    item['output'] = {
+                    item['input']['prompt_mask'] = {
                         '0': item['output']['0'],
                     }
+
                 item['output'] = {}
 
             # copy folder

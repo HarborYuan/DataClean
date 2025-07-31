@@ -99,7 +99,7 @@ METALIST = {
     }
 }
 
-CLOSE_WITH_ANSWER = 1
+CLOSE_WITH_ANSWER = 0
 
 
 import random
